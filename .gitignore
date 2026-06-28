@@ -1,0 +1,57 @@
+# Build artifacts
+/bin/
+/obj/
+/build/
+/out/
+*.o
+*.obj
+*.exe
+*.out
+*.app
+
+# Compiled binaries
+*.bin
+*.dll
+*.so
+*.dylib
+*.a
+*.lib
+
+# Debug files
+*.dSYM/
+*.pdb
+*.ilk
+*.exp
+
+# IDE/editor files
+.vscode/
+.idea/
+*.code-workspace
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs and temp files
+*.log
+*.tmp
+*.temp
+*.swp
+*~
+
+# CMake / Make / Ninja outputs
+CMakeCache.txt
+CMakeFiles/
+cmake-build-*/
+Makefile
+makefile
+.ninja*
+
+# Test / coverage outputs
+coverage/
+*.gcda
+*.gcno
+
+# Local config
+.env
+.env.*
