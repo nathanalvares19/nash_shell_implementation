@@ -1,14 +1,123 @@
+/*
+ * ============================================================================
+ * File        : main.cpp
+ * Project     : Nash Shell
+ * Author      : Nathan Alvares
+ * Description : A Unix-like shell built from scratch in C++ using POSIX system
+ *               calls. The project is intended for learning.
+ * ============================================================================
+ */
+
 #include <iostream>
 #include <cstdlib>
 #include <cstring>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <string>
+
+/*
+    MACROS
+*/
+
 // read line function
 #define NASH_RL_BUFSIZE 1024
 
 // split line function
 #define NASH_TOK_BUFSIZE 64
 #define NASH_TOK_DELIM " \t\r\n\a"
+
+// version number
+#define NASH_VERSION "1.0.0"
+
+// username size
+#define USERNAME_BUFSIZE 32
+
+/*
+    FUNCTION DECLARATIONS
+*/
+
+// execution
+void nash_loop(void);
+int nash_execute(char **args);
+int nash_launch(char **args);
+
+// processing
+char *nash_read_line(void);
+char **nash_split_line(char *line);
+
+// built-in functions
+int nash_cd(char **args);
+int nash_help(char **args);
+int nash_exit(char **args);
+int nash_builtins_nums();
+
+/*
+    FUNCTION DEFINITIONS
+*/
+
+// built-in functions
+const char *nash_builtins_str[] = {
+    "cd",
+    "help",
+    "exit"};
+
+int (*nash_builtins_func[])(char **) = {
+    nash_cd,
+    nash_help,
+    nash_exit};
+
+int nash_builtins_nums()
+{
+    return sizeof(nash_builtins_str) / sizeof(const char *);
+}
+
+// CHANGE DIRECTORY FUNCTION
+int nash_cd(char **args)
+{
+    if (args[1] == nullptr)
+    {
+        std::cerr << "nash: expected argument for \"cd\"\n";
+    }
+    else
+    {
+        if (chdir(args[1]) != 0)
+        {
+            perror("nash");
+        }
+    }
+    return 1;
+}
+
+// HELP FUNCTION
+int nash_help(char **args)
+{
+    std::cout << "\n------------------------------------------------\n";
+    std::cout << R"( __ _   __   ____  _  _ 
+(  ( \ / _\ / ___)/ )( \
+/    //    \\___ \) __ (
+\_)__)\_/\_/(____/\_)(_/
+                  )";
+    std::cout << "\n";
+    std::cout << "Type program names and arguments, and hit enter.\n\n";
+    std::cout << "The following are built-in:\n";
+
+    for (int i = 0; i < nash_builtins_nums(); i++)
+    {
+        std::cout << (i + 1) << ". " << nash_builtins_str[i] << "\n";
+    }
+
+    std::cout << "\nMore functionality to be added soon.\n";
+    std::cout << "------------------------------------------------\n\n";
+
+    return 1;
+}
+
+// EXIT FUNCTION
+int nash_exit(char **args)
+{
+    std::cout << "\nExiting Shell...\n\n";
+    return 0;
+}
 
 // main shell loop
 void nash_loop(void)
@@ -17,17 +126,42 @@ void nash_loop(void)
     char **args;
     int status;
 
+    // username implementation
+    char *name = (char *)std::malloc(sizeof(char) * USERNAME_BUFSIZE);
+    if (!name)
+    {
+        std::cerr << "nash: allocation error\n";
+        std::exit(EXIT_FAILURE);
+    }
+
+    size_t bufsize = USERNAME_BUFSIZE;
+    std::cout << "Enter username (maximum 32 chars): ";
+    size_t name_length = getline(&name, &bufsize, stdin);
+
+    if (name_length == -1)
+    {
+        free(name);
+        return;
+    }
+    else
+    {
+        if (name[name_length - 1] == '\n')
+        {
+            name[name_length - 1] = '\0';
+        }
+    }
+
     do
     {
-        std::cout << "> ";
+        std::cout << name << " > ";
         line = nash_read_line();
         args = nash_split_line(line);
         status = nash_execute(args);
 
         free(line);
         free(args);
-
     } while (status);
+    free(name);
 }
 
 // read line function
@@ -95,7 +229,7 @@ char **nash_split_line(char *line)
         if (position >= bufsize)
         {
             bufsize += NASH_TOK_BUFSIZE;
-            std::realloc(tokens, sizeof(char *) * bufsize);
+            tokens = (char **)std::realloc(tokens, sizeof(char *) * bufsize);
             if (!tokens)
             {
                 std::cerr << "nash: allocation error\n";
@@ -110,6 +244,7 @@ char **nash_split_line(char *line)
     return tokens;
 }
 
+// launch process function
 int nash_launch(char **args)
 {
     pid_t pid, wpid;
@@ -141,64 +276,7 @@ int nash_launch(char **args)
     return 1;
 }
 
-int nash_cd(char **args);
-int nash_help(char **args);
-int nash_exit(char **args);
-
-// built-in functions
-char *nash_builtins_str[]{
-    "cd",
-    "help",
-    "exit"};
-
-int (*nash_builtins_func[])(char **) = {
-    &nash_cd,
-    &nash_help,
-    &nash_exit}
-
-int nash_builtins_nums()
-{
-    return sizeof(nash_builtins_str) / sizeof(char *);
-}
-
-// CHANGE DIRECTORY FUNCTION
-int nash_cd(char **args)
-{
-    if (args[1] == nullptr)
-    {
-        std::cerr << "nash: expected argument to \"cd\"\n";
-    }
-    else
-    {
-        if (chdir(args[1]) != 0)
-        {
-            perror("nash");
-        }
-    }
-    return 1;
-}
-
-// HELP FUNCTION
-int nash_help(char **args)
-{
-    std::cout << "Nathan's NASH Shell\n";
-    std::cout << "Type program names and arguments, and hit enter.\n";
-    std::cout << "The following are built-in:\n";
-
-    for (int i = 0; i < nash_builtins_nums(); i++)
-    {
-        std::cout << nash_builtins_str[i] << "\n";
-    }
-
-    return 1;
-}
-
-// EXIT FUNCTION
-int nash_exit(char **args)
-{
-    return 0;
-}
-
+// main execution function
 int nash_execute(char **args)
 {
     if (args[0] == nullptr)
@@ -208,7 +286,7 @@ int nash_execute(char **args)
 
     for (int i = 0; i < nash_builtins_nums(); i++)
     {
-        if (strcmp(args[0], nash_builtins_str[i]) != 0)
+        if (strcmp(args[0], nash_builtins_str[i]) == 0)
         {
             return (*nash_builtins_func[i])(args);
         }
@@ -220,8 +298,6 @@ int nash_execute(char **args)
 // main function
 int main(int argc, char **argv)
 {
-
     nash_loop();
-
     return EXIT_SUCCESS;
 }
