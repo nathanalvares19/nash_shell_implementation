@@ -32,6 +32,9 @@
 // username size
 #define USERNAME_BUFSIZE 32
 
+// username size
+#define WDIR_BUFSIZE 128
+
 /*
     FUNCTION DECLARATIONS
 */
@@ -54,6 +57,9 @@ int nash_builtins_nums();
 /*
     FUNCTION DEFINITIONS
 */
+
+// working directory variable
+char *wk_dir = (char *)std::malloc(sizeof(char) * WDIR_BUFSIZE);
 
 // built-in functions
 const char *nash_builtins_str[] = {
@@ -84,6 +90,11 @@ int nash_cd(char **args)
         {
             perror("nash");
         }
+
+        if (getcwd(wk_dir, WDIR_BUFSIZE) == nullptr)
+        {
+            perror("getcwd");
+        }
     }
     return 1;
 }
@@ -92,11 +103,14 @@ int nash_cd(char **args)
 int nash_help(char **args)
 {
     std::cout << "\n------------------------------------------------\n";
-    std::cout << R"( __ _   __   ____  _  _ 
-(  ( \ / _\ / ___)/ )( \
-/    //    \\___ \) __ (
-\_)__)\_/\_/(____/\_)(_/
-                  )";
+    std::cout << R"(░███    ░██    ░███      ░██████   ░██     ░██ 
+░████   ░██   ░██░██    ░██   ░██  ░██     ░██ 
+░██░██  ░██  ░██  ░██  ░██         ░██     ░██ 
+░██ ░██ ░██ ░█████████  ░████████  ░██████████ 
+░██  ░██░██ ░██    ░██         ░██ ░██     ░██ 
+░██   ░████ ░██    ░██  ░██   ░██  ░██     ░██ 
+░██    ░███ ░██    ░██   ░██████   ░██     ░██ 
+                                               )";
     std::cout << "\n";
     std::cout << "Type program names and arguments, and hit enter.\n\n";
     std::cout << "The following are built-in:\n";
@@ -151,9 +165,14 @@ void nash_loop(void)
         }
     }
 
+    if (getcwd(wk_dir, WDIR_BUFSIZE) == nullptr)
+    {
+        perror("getcwd");
+    }
+
     do
     {
-        std::cout << name << " > ";
+        std::cout << name << ": " << wk_dir << " > ";
         line = nash_read_line();
         args = nash_split_line(line);
         status = nash_execute(args);
