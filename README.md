@@ -25,5 +25,3 @@ _For macOS/Linux, jump to step 3_
 ## References
 
 - [Stephen Brennan](https://brennan.io/2015/01/16/write-a-shell-in-c/)
-
-C:\Users\natha\ip\etc\nash_shell\main.cpp
