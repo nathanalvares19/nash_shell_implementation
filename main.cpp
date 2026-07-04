@@ -53,6 +53,7 @@ int nash_cd(char **args);
 int nash_help(char **args);
 int nash_exit(char **args);
 int nash_pwd(char **args);
+int nash_clear(char **args);
 int nash_builtins_nums();
 
 /*
@@ -67,13 +68,15 @@ const char *nash_builtins_str[] = {
     "cd",
     "help",
     "exit",
-    "pwd"};
+    "pwd",
+    "slate"};
 
 int (*nash_builtins_func[])(char **) = {
     nash_cd,
     nash_help,
     nash_exit,
-    nash_pwd};
+    nash_pwd,
+    nash_clear};
 
 int nash_builtins_nums()
 {
@@ -153,6 +156,12 @@ int nash_pwd(char **args)
     return 1;
 }
 
+// CLEAR TERMINAL FUNCTION
+int nash_clear(char **args)
+{
+    std::cout << "\033[H\033[2J";
+    return 1;
+}
 // main shell loop
 void nash_loop(void)
 {
