@@ -52,6 +52,7 @@ char **nash_split_line(char *line);
 int nash_cd(char **args);
 int nash_help(char **args);
 int nash_exit(char **args);
+int nash_pwd(char **args);
 int nash_builtins_nums();
 
 /*
@@ -65,12 +66,14 @@ char *wk_dir = (char *)std::malloc(sizeof(char) * WDIR_BUFSIZE);
 const char *nash_builtins_str[] = {
     "cd",
     "help",
-    "exit"};
+    "exit",
+    "pwd"};
 
 int (*nash_builtins_func[])(char **) = {
     nash_cd,
     nash_help,
-    nash_exit};
+    nash_exit,
+    nash_pwd};
 
 int nash_builtins_nums()
 {
@@ -82,7 +85,11 @@ int nash_cd(char **args)
 {
     if (args[1] == nullptr)
     {
-        std::cerr << "nash: expected argument for \"cd\"\n";
+        // std::cerr << "nash: expected argument for \"cd\"\n";
+        if (chdir("/") != 0)
+        {
+            perror("nash");
+        }
     }
     else
     {
@@ -90,12 +97,14 @@ int nash_cd(char **args)
         {
             perror("nash");
         }
-
-        if (getcwd(wk_dir, WDIR_BUFSIZE) == nullptr)
-        {
-            perror("getcwd");
-        }
     }
+
+    // save working dir in variable
+    if (getcwd(wk_dir, WDIR_BUFSIZE) == nullptr)
+    {
+        perror("getcwd");
+    }
+
     return 1;
 }
 
@@ -131,6 +140,17 @@ int nash_exit(char **args)
 {
     std::cout << "\nExiting Shell...\n\n";
     return 0;
+}
+
+// PWD FUNCTION
+int nash_pwd(char **args)
+{
+    if (getcwd(wk_dir, WDIR_BUFSIZE) == nullptr)
+    {
+        perror("nash");
+    }
+    std::cout << wk_dir << "\n";
+    return 1;
 }
 
 // main shell loop
@@ -172,7 +192,7 @@ void nash_loop(void)
 
     do
     {
-        std::cout << name << ": " << wk_dir << " > ";
+        std::cout << name << " @ " << wk_dir << " > ";
         line = nash_read_line();
         args = nash_split_line(line);
         status = nash_execute(args);
