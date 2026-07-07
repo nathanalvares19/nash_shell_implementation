@@ -14,6 +14,7 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <string>
+#include <iomanip>
 
 /*
     MACROS
@@ -35,6 +36,9 @@
 // username size
 #define WDIR_BUFSIZE 128
 
+// history size
+#define HIST_BUFSIZE 128
+
 /*
     FUNCTION DECLARATIONS
 */
@@ -54,7 +58,15 @@ int nash_help(char **args);
 int nash_exit(char **args);
 int nash_pwd(char **args);
 int nash_clear(char **args);
+int nash_history(char **args);
 int nash_builtins_nums();
+
+// helper functions
+void nash_add_history(char *line);
+
+// helper variables
+int history_last_insert_idx = -1;
+int history_count = 0;
 
 /*
     FUNCTION DEFINITIONS
@@ -69,21 +81,28 @@ const char *nash_builtins_str[] = {
     "help",
     "exit",
     "pwd",
-    "slate"};
+    "slate",
+    "past"};
 
+// built-in function descriptions
 const char *nash_builtins_desc[] = {
     "cd: Changes the current directory",
     "help: Information on available commands",
     "exit: Exits the shell",
     "pwd: Prints the current directory",
-    "slate: Clears the terminal screen"};
+    "slate: Clears the terminal screen",
+    "past: Prints the command history for the current shell session"};
+
+// history cmd lines array
+char *nash_history_lines[HIST_BUFSIZE];
 
 int (*nash_builtins_func[])(char **) = {
     nash_cd,
     nash_help,
     nash_exit,
     nash_pwd,
-    nash_clear};
+    nash_clear,
+    nash_history};
 
 int nash_builtins_nums()
 {
@@ -169,6 +188,55 @@ int nash_clear(char **args)
     std::cout << "\033[H\033[2J";
     return 1;
 }
+
+// ADD TO HISTORY FUNCTION
+void nash_add_history(char *line)
+{
+    history_last_insert_idx = (history_last_insert_idx + 1) % HIST_BUFSIZE;
+    history_count += 1;
+
+    if (history_count > 128)
+    {
+        free(nash_history_lines[history_last_insert_idx]);
+    }
+
+    char *cmd = strdup(line);
+    if (cmd == nullptr)
+    {
+        perror("strdup");
+        return;
+    }
+    nash_history_lines[history_last_insert_idx] = cmd;
+}
+
+// PRINT HISTORY FUNCTION
+int nash_history(char **args)
+{
+    if (history_count > 128)
+    {
+        int idx = (history_last_insert_idx + 1) % HIST_BUFSIZE;
+        int num = 1;
+        while (idx != history_last_insert_idx)
+        {
+            std::cout << "  " << std::setw(3) << num << "  " << nash_history_lines[idx] << "\n";
+            idx = (idx + 1) % HIST_BUFSIZE;
+            num += 1;
+        }
+        std::cout << "  " << std::setw(3) << num << "  " << nash_history_lines[idx] << "\n";
+    }
+    else
+    {
+        std::cout << "\n";
+        for (int i = 0; i <= history_last_insert_idx; i++)
+        {
+            std::cout << "  " << std::setw(3) << (i + 1) << "  " << nash_history_lines[i] << "\n";
+        }
+        std::cout << "\n";
+    }
+
+    return 1;
+}
+
 // main shell loop
 void nash_loop(void)
 {
@@ -210,6 +278,7 @@ void nash_loop(void)
     {
         std::cout << name << " @ " << wk_dir << " > ";
         line = nash_read_line();
+        nash_add_history(line);
         args = nash_split_line(line);
         status = nash_execute(args);
 
