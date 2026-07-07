@@ -71,6 +71,13 @@ const char *nash_builtins_str[] = {
     "pwd",
     "slate"};
 
+const char *nash_builtins_desc[] = {
+    "cd: Changes the current directory",
+    "help: Information on available commands",
+    "exit: Exits the shell",
+    "pwd: Prints the current directory",
+    "slate: Clears the terminal screen"};
+
 int (*nash_builtins_func[])(char **) = {
     nash_cd,
     nash_help,
@@ -129,7 +136,7 @@ int nash_help(char **args)
 
     for (int i = 0; i < nash_builtins_nums(); i++)
     {
-        std::cout << (i + 1) << ". " << nash_builtins_str[i] << "\n";
+        std::cout << (i + 1) << ". " << nash_builtins_desc[i] << "\n";
     }
 
     std::cout << "\nMore functionality to be added soon.\n";
