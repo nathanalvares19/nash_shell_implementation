@@ -25,3 +25,4 @@ _For macOS/Linux, jump to step 3_
 ## References
 
 - [Stephen Brennan](https://brennan.io/2015/01/16/write-a-shell-in-c/)
+- [POSIX man-pages](https://man7.org/linux/man-pages/dir_all_by_section.html)
