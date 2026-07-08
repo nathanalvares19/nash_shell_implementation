@@ -307,7 +307,6 @@ char *process_name()
     while (true)
     {
         int c = getchar();
-
         if (c == '\n')
         {
             std::cout << '\n';
@@ -315,7 +314,7 @@ char *process_name()
             break;
         }
 
-        if (c == '\b')
+        if (c == 127 || c == '\b')
         {
             if (position != 0)
             {
@@ -403,7 +402,7 @@ char *nash_read_line(void)
             buffer[position] = '\0';
             return buffer;
         }
-        else if (c == '\b')
+        else if (c == 127 || c == '\b')
         {
             if (position != 0)
             {
