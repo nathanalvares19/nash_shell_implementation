@@ -15,10 +15,33 @@
 #include <sys/wait.h>
 #include <string>
 #include <iomanip>
+#include <termios.h>
+
+// signal handling
+struct sigaction sa;
+
+// canonical mode
+struct termios original_termios;
+
+// non-canonical mode
+struct termios raw = original_termios;
 
 /*
     MACROS
 */
+
+// COLOURS
+#define BLACK "\033[30m"
+#define RED "\033[31m"
+#define GREEN "\033[32m"
+#define YELLOW "\033[33m"
+#define BLUE "\033[34m"
+#define MAGENTA "\033[35m"
+#define CYAN "\033[36m"
+#define WHITE "\033[37m"
+
+// RESET COLOUR
+#define RESET "\033[0m"
 
 // read line function
 #define NASH_RL_BUFSIZE 1024
@@ -33,11 +56,44 @@
 // username size
 #define USERNAME_BUFSIZE 32
 
-// username size
+// working directory size
 #define WDIR_BUFSIZE 128
 
 // history size
 #define HIST_BUFSIZE 128
+
+/*
+    TERMINAL SETTINGS
+*/
+
+void set_ncanonical_mode()
+{
+    raw.c_lflag &= ~ICANON; // disable canonical mode
+    raw.c_lflag &= ~ECHO;   // disable echo
+    tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
+}
+
+// reset canonical mode
+void restore_terminal()
+{
+    tcsetattr(STDIN_FILENO, TCSAFLUSH, &original_termios);
+}
+
+// SIGINT handler
+void sigint_handler(int sig)
+{
+    std::cout << "\n";
+    return;
+}
+
+// set signal handler
+void install_signal_handlers()
+{
+    sa.sa_handler = sigint_handler;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = 0;
+    sigaction(SIGINT, &sa, nullptr);
+}
 
 /*
     FUNCTION DECLARATIONS
@@ -80,7 +136,7 @@ const char *nash_builtins_str[] = {
     "cd",
     "help",
     "exit",
-    "pwd",
+    "loc",
     "slate",
     "past"};
 
@@ -89,7 +145,7 @@ const char *nash_builtins_desc[] = {
     "cd: Changes the current directory",
     "help: Information on available commands",
     "exit: Exits the shell",
-    "pwd: Prints the current directory",
+    "loc: Prints the current directory",
     "slate: Clears the terminal screen",
     "past: Prints the command history for the current shell session"};
 
@@ -226,15 +282,57 @@ int nash_history(char **args)
     }
     else
     {
-        std::cout << "\n";
         for (int i = 0; i <= history_last_insert_idx; i++)
         {
             std::cout << "  " << std::setw(3) << (i + 1) << "  " << nash_history_lines[i] << "\n";
         }
-        std::cout << "\n";
     }
 
     return 1;
+}
+
+// username processing
+char *process_name()
+{
+    char *name = (char *)std::malloc(sizeof(char) * USERNAME_BUFSIZE);
+    int position = 0;
+    if (!name)
+    {
+        std::cerr << "nash: allocation error\n";
+        std::exit(EXIT_FAILURE);
+    }
+
+    while (true)
+    {
+        int c = getchar();
+
+        if (c == '\n')
+        {
+            std::cout << '\n';
+            std::cout.flush();
+            break;
+        }
+
+        if (c == '\b')
+        {
+            if (position != 0)
+            {
+                position--;
+                std::cout << "\b \b";
+                std::cout.flush();
+            }
+
+            continue;
+        }
+
+        name[position] = (char)c;
+        position++;
+
+        std::cout << (char)c;
+        std::cout.flush();
+    }
+
+    return name;
 }
 
 // main shell loop
@@ -245,29 +343,8 @@ void nash_loop(void)
     int status;
 
     // username implementation
-    char *name = (char *)std::malloc(sizeof(char) * USERNAME_BUFSIZE);
-    if (!name)
-    {
-        std::cerr << "nash: allocation error\n";
-        std::exit(EXIT_FAILURE);
-    }
-
-    size_t bufsize = USERNAME_BUFSIZE;
     std::cout << "Enter username (maximum 32 chars): ";
-    size_t name_length = getline(&name, &bufsize, stdin);
-
-    if (name_length == -1)
-    {
-        free(name);
-        return;
-    }
-    else
-    {
-        if (name[name_length - 1] == '\n')
-        {
-            name[name_length - 1] = '\0';
-        }
-    }
+    char *name = process_name();
 
     if (getcwd(wk_dir, WDIR_BUFSIZE) == nullptr)
     {
@@ -276,7 +353,7 @@ void nash_loop(void)
 
     do
     {
-        std::cout << name << " @ " << wk_dir << " > ";
+        std::cout << YELLOW << name << RESET << " @ " << GREEN << wk_dir << RESET << " > ";
         line = nash_read_line();
         nash_add_history(line);
         args = nash_split_line(line);
@@ -306,16 +383,25 @@ char *nash_read_line(void)
     {
         c = getchar();
 
-        if (c == EOF || c == '\n')
+        if (c == '\f') // CTRL + L --> clear screen
         {
+            std::cout << "\033[s\033 M\033[1E\033[1J\033 8";
+            continue;
+        }
+        else if (c == EOF || c == '\n')
+        {
+            std::cout << '\n';
+            std::cout.flush();
             buffer[position] = '\0';
             return buffer;
         }
         else
         {
             buffer[position] = c;
+            std::cout << (char)c;
+            std::cout.flush();
+            position++;
         }
-        position++;
 
         // if exceeded allocated buffer, allocate more memory
         if (position >= bufsize)
@@ -422,6 +508,22 @@ int nash_execute(char **args)
 // main function
 int main(int argc, char **argv)
 {
+    // save original terminal
+    tcgetattr(STDIN_FILENO, &original_termios);
+
+    // create new terminal
+    raw = original_termios;
+    set_ncanonical_mode();
+
+    // setup signal handlers
+    install_signal_handlers();
+
+    // run shell loop
     nash_loop();
+
+    // reset terminal
+    restore_terminal();
+
+    // exit program
     return EXIT_SUCCESS;
 }
