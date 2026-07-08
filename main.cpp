@@ -84,7 +84,7 @@ void restore_terminal()
 // SIGINT handler
 void sigint_handler(int sig)
 {
-    std::cout << "\n";
+    write(STDOUT_FILENO, "^C", 2);
     return;
 }
 
@@ -402,6 +402,17 @@ char *nash_read_line(void)
             std::cout.flush();
             buffer[position] = '\0';
             return buffer;
+        }
+        else if (c == '\b')
+        {
+            if (position != 0)
+            {
+                position--;
+                std::cout << "\b \b";
+                std::cout.flush();
+            }
+
+            continue;
         }
         else
         {
