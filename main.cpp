@@ -66,6 +66,8 @@ struct termios raw = original_termios;
     TERMINAL SETTINGS
 */
 
+char *name;
+
 void set_ncanonical_mode()
 {
     raw.c_lflag &= ~ICANON; // disable canonical mode
@@ -344,7 +346,8 @@ void nash_loop(void)
 
     // username implementation
     std::cout << "Enter username (maximum 32 chars): ";
-    char *name = process_name();
+    // global name variable
+    name = process_name();
 
     if (getcwd(wk_dir, WDIR_BUFSIZE) == nullptr)
     {
@@ -385,7 +388,12 @@ char *nash_read_line(void)
 
         if (c == '\f') // CTRL + L --> clear screen
         {
-            std::cout << "\033[s\033 M\033[1E\033[1J\033 8";
+            std::cout << "\033[H\033[2J";
+            std::cout << YELLOW << name << RESET << " @ " << GREEN << wk_dir << RESET << " > ";
+            buffer[position] = '\0';
+            std::cout << buffer;
+            std::cout.flush();
+            buffer[position] = ' ';
             continue;
         }
         else if (c == EOF || c == '\n')
