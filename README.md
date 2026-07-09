@@ -1,26 +1,92 @@
 # Writing a shell from scratch
 
-This is a simple shell implementation written in C++ but using certain C language elements. It uses UNIX system calls so the current version will not (yet) run on Windows kernels.
+A simple Unix-like shell written in C++.
 
-## Setup (for Windows)
+## Prerequisites
 
-_For macOS/Linux, jump to step 3_
+### Windows (WSL)
 
-1. Install WSL with a distro (I have used Ubuntu).
+1. Install WSL with a Linux distribution (Ubuntu recommended).
 
-2. Open your distro and run this command:
-
-```bash
-    sudo apt update && sudo apt install build-essential
-
-```
-
-3. Navigate to this project directory and run this command:
+2. Open your WSL terminal and install the build tools:
 
 ```bash
-    g++ main.cpp -o nash
-
+sudo apt update
+sudo apt install build-essential
 ```
+
+### macOS
+
+Install Xcode Command Line Tools:
+
+```bash
+xcode-select --install
+```
+
+### Linux
+
+Install a C++ compiler and Make:
+
+```bash
+sudo apt update
+sudo apt install build-essential
+```
+
+---
+
+## Build
+
+From the project root directory:
+
+```bash
+make
+```
+
+This will generate the executable:
+
+```text
+nash
+```
+
+---
+
+## Run
+
+```bash
+./nash
+```
+
+Or:
+
+```bash
+make run
+```
+
+---
+
+## Clean Build Files
+
+```bash
+make clean
+```
+
+---
+
+## Rebuild
+
+```bash
+make rebuild
+```
+
+## Features
+
+- Command execution
+- Built-in commands (`cd`, `help`, `exit`, etc.)
+- Command history
+- Single pipe support
+- Custom prompt
+- Signal handling
+- Non-canonical terminal input
 
 ## References
 
