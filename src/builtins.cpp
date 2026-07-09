@@ -1,5 +1,6 @@
 #include "builtins.h"
 #include "constants.h"
+#include "globals.h"
 
 #include <iostream>
 #include <iomanip>
@@ -128,25 +129,6 @@ int nash_clear(char **args)
 // print command history function
 int nash_history(char **args)
 {
-    if (history_count > 128)
-    {
-        int idx = (history_last_insert_idx + 1) % HIST_BUFSIZE;
-        int num = 1;
-        while (idx != history_last_insert_idx)
-        {
-            std::cout << "  " << std::setw(3) << num << "  " << nash_history_lines[idx] << "\n";
-            idx = (idx + 1) % HIST_BUFSIZE;
-            num += 1;
-        }
-        std::cout << "  " << std::setw(3) << num << "  " << nash_history_lines[idx] << "\n";
-    }
-    else
-    {
-        for (int i = 0; i <= history_last_insert_idx; i++)
-        {
-            std::cout << "  " << std::setw(3) << (i + 1) << "  " << nash_history_lines[i] << "\n";
-        }
-    }
-
+    history.print();
     return 1;
 }

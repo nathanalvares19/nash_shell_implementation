@@ -28,4 +28,4 @@ constexpr int USERNAME_BUFSIZE = 32;
 constexpr int WDIR_BUFSIZE = 128;
 
 // history size
-constexpr int HIST_BUFSIZE = 128;
+// constexpr int HIST_BUFSIZE = 128;
