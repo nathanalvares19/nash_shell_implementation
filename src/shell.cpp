@@ -9,7 +9,7 @@
 #include <unistd.h>
 
 // main shell loop
-void nash_loop(void)
+void Shell::run()
 {
     char *line;
     char **args;
@@ -40,7 +40,7 @@ void nash_loop(void)
 }
 
 // username processing
-char *process_name()
+char *Shell::process_name()
 {
     char *name = (char *)std::malloc(sizeof(char) * USERNAME_BUFSIZE);
     int position = 0;

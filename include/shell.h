@@ -1,10 +1,10 @@
 #pragma once
 
-// misc declaration
-void nash_add_history(char *line);
+class Shell
+{
+public:
+    void run();
 
-// shell loop declaration
-void nash_loop(void);
-
-// name processing declaration
-char *process_name();
+private:
+    char *process_name();
+};
