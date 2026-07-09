@@ -1,2 +1,27 @@
-# executables
+# Executables
+nash
 *.exe
+*.out
+
+# Object files
+*.o
+*.obj
+
+# Static / shared libraries
+*.a
+*.so
+*.dylib
+
+# Build directories
+build/
+bin/
+
+# VS Code
+.vscode/
+
+# macOS
+.DS_Store
+
+# Vim
+*.swp
+*.swo
