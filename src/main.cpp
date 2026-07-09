@@ -8,6 +8,9 @@
  * ============================================================================
  */
 
+#include "builtins.h"
+#include "constants.h"
+
 #include <iostream>
 #include <cstdlib>
 #include <cstring>
@@ -31,36 +34,36 @@ struct termios raw = original_termios;
 */
 
 // COLOURS
-#define BLACK "\033[30m"
-#define RED "\033[31m"
-#define GREEN "\033[32m"
-#define YELLOW "\033[33m"
-#define BLUE "\033[34m"
-#define MAGENTA "\033[35m"
-#define CYAN "\033[36m"
-#define WHITE "\033[37m"
+// #define BLACK "\033[30m"
+// #define RED "\033[31m"
+// #define GREEN "\033[32m"
+// #define YELLOW "\033[33m"
+// #define BLUE "\033[34m"
+// #define MAGENTA "\033[35m"
+// #define CYAN "\033[36m"
+// #define WHITE "\033[37m"
 
 // RESET COLOUR
-#define RESET "\033[0m"
+// #define RESET "\033[0m"
 
 // read line function
-#define NASH_RL_BUFSIZE 1024
+// #define NASH_RL_BUFSIZE 1024
 
 // split line function
-#define NASH_TOK_BUFSIZE 64
-#define NASH_TOK_DELIM " \t\r\n\a"
+// #define NASH_TOK_BUFSIZE 64
+// #define NASH_TOK_DELIM " \t\r\n\a"
 
 // version number
-#define NASH_VERSION "1.0.0"
+// #define NASH_VERSION "1.0.0"
 
 // username size
-#define USERNAME_BUFSIZE 32
+// #define USERNAME_BUFSIZE 32
 
 // working directory size
-#define WDIR_BUFSIZE 128
+// #define WDIR_BUFSIZE 128
 
 // history size
-#define HIST_BUFSIZE 128
+// #define HIST_BUFSIZE 128
 
 /*
     TERMINAL SETTINGS
@@ -111,13 +114,13 @@ char *nash_read_line(void);
 char **nash_split_line(char *line);
 
 // built-in functions
-int nash_cd(char **args);
-int nash_help(char **args);
-int nash_exit(char **args);
-int nash_pwd(char **args);
-int nash_clear(char **args);
-int nash_history(char **args);
-int nash_builtins_nums();
+// int nash_cd(char **args);
+// int nash_help(char **args);
+// int nash_exit(char **args);
+// int nash_pwd(char **args);
+// int nash_clear(char **args);
+// int nash_history(char **args);
+// int nash_builtins_nums();
 
 // helper functions
 void nash_add_history(char *line);
@@ -136,118 +139,118 @@ int history_count = 0;
 char *wk_dir = (char *)std::malloc(sizeof(char) * WDIR_BUFSIZE);
 
 // built-in functions
-const char *nash_builtins_str[] = {
-    "cd",
-    "help",
-    "exit",
-    "loc",
-    "slate",
-    "past"};
+// const char *nash_builtins_str[] = {
+//     "cd",
+//     "help",
+//     "exit",
+//     "loc",
+//     "slate",
+//     "past"};
 
 // built-in function descriptions
-const char *nash_builtins_desc[] = {
-    "cd: Changes the current directory",
-    "help: Information on available commands",
-    "exit: Exits the shell",
-    "loc: Prints the current directory",
-    "slate: Clears the terminal screen",
-    "past: Prints the command history for the current shell session"};
+// const char *nash_builtins_desc[] = {
+//     "cd: Changes the current directory",
+//     "help: Information on available commands",
+//     "exit: Exits the shell",
+//     "loc: Prints the current directory",
+//     "slate: Clears the terminal screen",
+//     "past: Prints the command history for the current shell session"};
 
 // history cmd lines array
 char *nash_history_lines[HIST_BUFSIZE];
 
-int (*nash_builtins_func[])(char **) = {
-    nash_cd,
-    nash_help,
-    nash_exit,
-    nash_pwd,
-    nash_clear,
-    nash_history};
+// int (*nash_builtins_func[])(char **) = {
+//     nash_cd,
+//     nash_help,
+//     nash_exit,
+//     nash_pwd,
+//     nash_clear,
+//     nash_history};
 
-int nash_builtins_nums()
-{
-    return sizeof(nash_builtins_str) / sizeof(const char *);
-}
+// int nash_builtins_nums()
+// {
+//     return sizeof(nash_builtins_str) / sizeof(const char *);
+// }
 
 // CHANGE DIRECTORY FUNCTION
-int nash_cd(char **args)
-{
-    if (args[1] == nullptr)
-    {
-        // std::cerr << "nash: expected argument for \"cd\"\n";
-        if (chdir("/") != 0)
-        {
-            perror("nash");
-        }
-    }
-    else
-    {
-        if (chdir(args[1]) != 0)
-        {
-            perror("nash");
-        }
-    }
+// int nash_cd(char **args)
+// {
+//     if (args[1] == nullptr)
+//     {
+//         // std::cerr << "nash: expected argument for \"cd\"\n";
+//         if (chdir("/") != 0)
+//         {
+//             perror("nash");
+//         }
+//     }
+//     else
+//     {
+//         if (chdir(args[1]) != 0)
+//         {
+//             perror("nash");
+//         }
+//     }
 
-    // save working dir in variable
-    if (getcwd(wk_dir, WDIR_BUFSIZE) == nullptr)
-    {
-        perror("getcwd");
-    }
+//     // save working dir in variable
+//     if (getcwd(wk_dir, WDIR_BUFSIZE) == nullptr)
+//     {
+//         perror("getcwd");
+//     }
 
-    return 1;
-}
+//     return 1;
+// }
 
 // HELP FUNCTION
-int nash_help(char **args)
-{
-    std::cout << "\n------------------------------------------------\n";
-    std::cout << R"(░███    ░██    ░███      ░██████   ░██     ░██ 
-░████   ░██   ░██░██    ░██   ░██  ░██     ░██ 
-░██░██  ░██  ░██  ░██  ░██         ░██     ░██ 
-░██ ░██ ░██ ░█████████  ░████████  ░██████████ 
-░██  ░██░██ ░██    ░██         ░██ ░██     ░██ 
-░██   ░████ ░██    ░██  ░██   ░██  ░██     ░██ 
-░██    ░███ ░██    ░██   ░██████   ░██     ░██ 
-                                               )";
-    std::cout << "\n";
-    std::cout << "Type program names and arguments, and hit enter.\n\n";
-    std::cout << "The following are built-in:\n";
+// int nash_help(char **args)
+// {
+//     std::cout << "\n------------------------------------------------\n";
+//     std::cout << R"(░███    ░██    ░███      ░██████   ░██     ░██
+// ░████   ░██   ░██░██    ░██   ░██  ░██     ░██
+// ░██░██  ░██  ░██  ░██  ░██         ░██     ░██
+// ░██ ░██ ░██ ░█████████  ░████████  ░██████████
+// ░██  ░██░██ ░██    ░██         ░██ ░██     ░██
+// ░██   ░████ ░██    ░██  ░██   ░██  ░██     ░██
+// ░██    ░███ ░██    ░██   ░██████   ░██     ░██
+//                                                )";
+//     std::cout << "\n";
+//     std::cout << "Type program names and arguments, and hit enter.\n\n";
+//     std::cout << "The following are built-in:\n";
 
-    for (int i = 0; i < nash_builtins_nums(); i++)
-    {
-        std::cout << (i + 1) << ". " << nash_builtins_desc[i] << "\n";
-    }
+//     for (int i = 0; i < nash_builtins_nums(); i++)
+//     {
+//         std::cout << (i + 1) << ". " << nash_builtins_desc[i] << "\n";
+//     }
 
-    std::cout << "\nMore functionality to be added soon.\n";
-    std::cout << "------------------------------------------------\n\n";
+//     std::cout << "\nMore functionality to be added soon.\n";
+//     std::cout << "------------------------------------------------\n\n";
 
-    return 1;
-}
+//     return 1;
+// }
 
 // EXIT FUNCTION
-int nash_exit(char **args)
-{
-    std::cout << "\nExiting Shell...\n\n";
-    return 0;
-}
+// int nash_exit(char **args)
+// {
+//     std::cout << "\nExiting Shell...\n\n";
+//     return 0;
+// }
 
 // PWD FUNCTION
-int nash_pwd(char **args)
-{
-    if (getcwd(wk_dir, WDIR_BUFSIZE) == nullptr)
-    {
-        perror("nash");
-    }
-    std::cout << wk_dir << "\n";
-    return 1;
-}
+// int nash_pwd(char **args)
+// {
+//     if (getcwd(wk_dir, WDIR_BUFSIZE) == nullptr)
+//     {
+//         perror("nash");
+//     }
+//     std::cout << wk_dir << "\n";
+//     return 1;
+// }
 
 // CLEAR TERMINAL FUNCTION
-int nash_clear(char **args)
-{
-    std::cout << "\033[H\033[2J";
-    return 1;
-}
+// int nash_clear(char **args)
+// {
+//     std::cout << "\033[H\033[2J";
+//     return 1;
+// }
 
 // ADD TO HISTORY FUNCTION
 void nash_add_history(char *line)
@@ -270,30 +273,30 @@ void nash_add_history(char *line)
 }
 
 // PRINT HISTORY FUNCTION
-int nash_history(char **args)
-{
-    if (history_count > 128)
-    {
-        int idx = (history_last_insert_idx + 1) % HIST_BUFSIZE;
-        int num = 1;
-        while (idx != history_last_insert_idx)
-        {
-            std::cout << "  " << std::setw(3) << num << "  " << nash_history_lines[idx] << "\n";
-            idx = (idx + 1) % HIST_BUFSIZE;
-            num += 1;
-        }
-        std::cout << "  " << std::setw(3) << num << "  " << nash_history_lines[idx] << "\n";
-    }
-    else
-    {
-        for (int i = 0; i <= history_last_insert_idx; i++)
-        {
-            std::cout << "  " << std::setw(3) << (i + 1) << "  " << nash_history_lines[i] << "\n";
-        }
-    }
+// int nash_history(char **args)
+// {
+//     if (history_count > 128)
+//     {
+//         int idx = (history_last_insert_idx + 1) % HIST_BUFSIZE;
+//         int num = 1;
+//         while (idx != history_last_insert_idx)
+//         {
+//             std::cout << "  " << std::setw(3) << num << "  " << nash_history_lines[idx] << "\n";
+//             idx = (idx + 1) % HIST_BUFSIZE;
+//             num += 1;
+//         }
+//         std::cout << "  " << std::setw(3) << num << "  " << nash_history_lines[idx] << "\n";
+//     }
+//     else
+//     {
+//         for (int i = 0; i <= history_last_insert_idx; i++)
+//         {
+//             std::cout << "  " << std::setw(3) << (i + 1) << "  " << nash_history_lines[i] << "\n";
+//         }
+//     }
 
-    return 1;
-}
+//     return 1;
+// }
 
 // username processing
 char *process_name()
@@ -455,7 +458,7 @@ void nash_loop(void)
 
     do
     {
-        std::cout << YELLOW << name << RESET << " @ " << GREEN << wk_dir << RESET << " > ";
+        std::cout << Colours::Yellow << name << Colours::Reset << " @ " << Colours::Green << wk_dir << Colours::Reset << " > ";
         line = nash_read_line();
         nash_add_history(line);
         args = nash_split_line(line);
@@ -488,7 +491,7 @@ char *nash_read_line(void)
         if (c == '\f') // CTRL + L --> clear screen
         {
             std::cout << "\033[H\033[2J";
-            std::cout << YELLOW << name << RESET << " @ " << GREEN << wk_dir << RESET << " > ";
+            std::cout << Colours::Yellow << name << Colours::Reset << " @ " << Colours::Green << wk_dir << Colours::Reset << " > ";
             buffer[position] = '\0';
             std::cout << buffer;
             std::cout.flush();
