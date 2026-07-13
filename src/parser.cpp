@@ -117,11 +117,16 @@ char *nash_read_line(void)
         }
         else
         {
-            buffer[length] = c;
+            for (int i = length; i >= cursor; i--)
+            {
+                buffer[i] = buffer[i - 1];
+            }
+
+            buffer[cursor] = c;
+            cursor++;
             length++;
-            cursor = length;
-            std::cout << (char)c;
-            std::cout.flush();
+
+            redraw_line(buffer, length, cursor);
         }
 
         // if exceeded allocated buffer, allocate more memory
