@@ -47,3 +47,19 @@ void History::print() const
         }
     }
 }
+
+// get a line of command history
+char *History::get_line(int idx)
+{
+    if (idx < History::count)
+    {
+        return History::lines[idx];
+    }
+    return nullptr;
+}
+
+// get history command count
+int History::get_count()
+{
+    return History::count;
+}

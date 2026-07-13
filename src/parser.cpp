@@ -44,6 +44,10 @@ char *nash_read_line(void)
         std::exit(EXIT_FAILURE);
     }
 
+    // history navigation init
+    int hist_count = history.get_count();
+    int hist_idx = hist_count - 1;
+
     while (1)
     {
         c = getchar();
@@ -58,11 +62,29 @@ char *nash_read_line(void)
             {
                 if (seq2 == 'A') // up
                 {
-                    // do nothing
+                    if (hist_idx > 0)
+                    {
+                        hist_idx--;
+                        const char *cmd = history.get_line(hist_idx);
+                        strcpy(buffer, cmd);
+                        length = strlen(cmd);
+                        cursor = length;
+                        redraw_line(buffer, length, cursor);
+                        continue;
+                    }
                 }
                 else if (seq2 == 'B') // down
                 {
-                    // do nothing
+                    hist_idx++;
+                    if (hist_idx < hist_count)
+                    {
+                        const char *cmd = history.get_line(hist_idx);
+                        strcpy(buffer, cmd);
+                        length = strlen(cmd);
+                        cursor = length;
+                        redraw_line(buffer, length, cursor);
+                        continue;
+                    }
                 }
                 else if (seq2 == 'C') // right
                 {
@@ -142,74 +164,6 @@ char *nash_read_line(void)
         }
     }
 }
-
-// read line function
-// char *nash_read_line(void)
-// {
-//     int bufsize = NASH_RL_BUFSIZE;
-//     int position = 0;
-//     char *buffer = (char *)std::malloc(sizeof(char) * bufsize); // assign an initial buffer
-//     int c;                                                      // "int" to detect EOF
-
-//     if (!buffer)
-//     {
-//         std::cerr << "nash: allocation error\n";
-//         std::exit(EXIT_FAILURE);
-//     }
-
-//     while (1)
-//     {
-//         c = getchar();
-
-//         if (c == '\f') // CTRL + L --> clear screen
-//         {
-//             std::cout << "\033[H\033[2J";
-//             shell.prompt(name);
-//             buffer[position] = '\0';
-//             std::cout << buffer;
-//             std::cout.flush();
-//             buffer[position] = ' ';
-//             continue;
-//         }
-//         else if (c == EOF || c == '\n')
-//         {
-//             std::cout << '\n';
-//             std::cout.flush();
-//             buffer[position] = '\0';
-//             return buffer;
-//         }
-//         else if (c == 127 || c == '\b')
-//         {
-//             if (position != 0)
-//             {
-//                 position--;
-//                 std::cout << "\b \b";
-//                 std::cout.flush();
-//             }
-
-//             continue;
-//         }
-//         else
-//         {
-//             buffer[position] = c;
-//             std::cout << (char)c;
-//             std::cout.flush();
-//             position++;
-//         }
-
-//         // if exceeded allocated buffer, allocate more memory
-//         if (position >= bufsize)
-//         {
-//             bufsize += NASH_RL_BUFSIZE; // double the size
-//             buffer = (char *)std::realloc(buffer, bufsize);
-//             if (!buffer)
-//             {
-//                 std::cerr << "nash: allocation error\n";
-//                 std::exit(EXIT_FAILURE);
-//             }
-//         }
-//     }
-// }
 
 // tokenize line function
 char **nash_split_line(char *line)

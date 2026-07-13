@@ -5,6 +5,8 @@ class History
 public:
     void add(const char *line);
     void print() const;
+    char *get_line(int idx);
+    int get_count();
 
 private:
     static constexpr int HIST_BUFSIZE = 128;
