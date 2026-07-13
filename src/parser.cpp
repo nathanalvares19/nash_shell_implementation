@@ -13,9 +13,12 @@ void redraw_line(const char *buffer, int length, int cursor)
     std::cout << '\r';
     shell.prompt(name);
 
-    for (int i = 0; i < length; i++)
+    if (buffer[0] != '\0')
     {
-        std::cout << buffer[i];
+        for (int i = 0; i < length; i++)
+        {
+            std::cout << buffer[i];
+        }
     }
 
     std::cout << "\033[K"; // erase from cursor to end of line
@@ -70,11 +73,11 @@ char *nash_read_line(void)
                         length = strlen(cmd);
                         cursor = length;
                         redraw_line(buffer, length, cursor);
-                        continue;
                     }
                 }
                 else if (seq2 == 'B') // down
                 {
+                    std::cout.flush();
                     if (hist_idx < hist_count)
                     {
                         hist_idx++;
@@ -82,7 +85,7 @@ char *nash_read_line(void)
 
                     if (hist_idx == hist_count)
                     {
-                        buffer[length] = '\0';
+                        buffer[0] = '\0';
                         redraw_line(buffer, length, cursor);
                     }
                     else
