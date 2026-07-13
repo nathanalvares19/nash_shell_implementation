@@ -46,7 +46,7 @@ char *nash_read_line(void)
 
     // history navigation init
     int hist_count = history.get_count();
-    int hist_idx = hist_count - 1;
+    int hist_idx = hist_count;
 
     while (1)
     {
