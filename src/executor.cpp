@@ -1,106 +1,154 @@
 #include "executor.h"
 #include "builtins.h"
 #include "globals.h"
+#include "terminal.h"
 
 #include <cstring>
 #include <unistd.h>
 #include <sys/wait.h>
 #include <iostream>
+#include <vector>
 
-// pipe processing
+// multiple pipes processing
 int process_pipe(char **args)
 {
     // find pipe
-    int pipe_idx = -1;
+    std::vector<int> pipe_indexes;
     for (int i = 0; args[i] != nullptr; i++)
     {
         if (strcmp(args[i], "|") == 0)
         {
-            pipe_idx = i;
-            break;
+            // adjacent pipes
+            if (!pipe_indexes.empty() && i == pipe_indexes.back() + 1)
+            {
+                return 0;
+            }
+            pipe_indexes.push_back(i);
         }
     }
 
     // pipe existence check
-    if (pipe_idx == -1)
+    if (pipe_indexes.empty())
     {
         return 0;
     }
-    else if (pipe_idx == 0 || args[pipe_idx + 1] == nullptr)
+    else if (pipe_indexes[0] == 0 || args[pipe_indexes.back() + 1] == nullptr) // invalid pipe usage cehck
     {
         std::cerr << "nash: invalid pipe usage\n";
         return 0;
     }
 
     // split args around pipe
-    args[pipe_idx] = nullptr;
-    char **left = args;
-    char **right = &args[pipe_idx + 1];
-
-    // create a pipe
-    int fd[2];
-    if (pipe(fd) == -1)
+    int num_of_pipes = pipe_indexes.size();
+    std::vector<char **> pipe_args;
+    pipe_args.push_back(args);
+    for (int i = 0; i < num_of_pipes; i++)
     {
-        perror("pipe");
-        return 1;
+        args[pipe_indexes[i]] = nullptr;
+        pipe_args.push_back(&args[pipe_indexes[i] + 1]);
     }
 
-    // left child
-    pid_t pid1 = fork();
-    if (pid1 == 0) // child process
+    // create pipes
+    std::vector<std::vector<int>> pipes(num_of_pipes, std::vector<int>(2));
+    for (int i = 0; i < num_of_pipes; i++)
     {
-        if (dup2(fd[1], STDOUT_FILENO) == -1)
+        if (pipe(pipes[i].data()) == -1)
         {
-            perror("dup2");
+            perror("pipe");
+            return 1;
+        }
+    }
+
+    // create children
+    std::vector<pid_t> pids; // store child pids
+    for (int i = 0; i < num_of_pipes + 1; i++)
+    {
+        pid_t pid = fork();
+
+        // error check
+        if (pid < 0)
+        {
+            perror("nash");
             return 1;
         }
 
-        close(fd[0]);
-        close(fd[1]);
-
-        if (execvp(left[0], left) == -1)
+        // store child pids
+        if (pid > 0)
         {
-            perror("nash");
-        }
-        exit(EXIT_FAILURE);
-    }
-    else if (pid1 < 0)
-    {
-        perror("nash");
-        return 1;
-    }
-
-    // right child
-    pid_t pid2 = fork();
-    if (pid2 == 0) // child process
-    {
-        if (dup2(fd[0], STDIN_FILENO) == -1)
-        {
-            perror("dup2");
-            return 1;
+            pids.push_back(pid);
         }
 
-        close(fd[0]);
-        close(fd[1]);
-
-        if (execvp(right[0], right) == -1)
+        // first cmd
+        if (i == 0 && pid == 0)
         {
-            perror("nash");
+            dup2(pipes[i][1], STDOUT_FILENO); // write end
+
+            // close child fds
+            for (int j = 0; j < num_of_pipes; j++)
+            {
+                close(pipes[j][0]);
+                close(pipes[j][1]);
+            }
+
+            if (execvp(pipe_args[i][0], pipe_args[i]) == -1)
+            {
+                perror("nash");
+                exit(EXIT_FAILURE);
+            }
         }
-        exit(EXIT_FAILURE);
+
+        // last cmd
+        if (i == num_of_pipes && pid == 0)
+        {
+            dup2(pipes[i - 1][0], STDIN_FILENO); // read end
+
+            // close child fds
+            for (int j = 0; j < num_of_pipes; j++)
+            {
+                close(pipes[j][0]);
+                close(pipes[j][1]);
+            }
+
+            if (execvp(pipe_args[i][0], pipe_args[i]) == -1)
+            {
+                perror("nash");
+                exit(EXIT_FAILURE);
+            }
+        }
+
+        // middle cmds
+        if ((i != 0 && i != num_of_pipes) && pid == 0)
+        {
+            dup2(pipes[i - 1][0], STDIN_FILENO); // read end
+            dup2(pipes[i][1], STDOUT_FILENO);    // write end
+
+            // close child fds
+            for (int j = 0; j < num_of_pipes; j++)
+            {
+                close(pipes[j][0]);
+                close(pipes[j][1]);
+            }
+
+            if (execvp(pipe_args[i][0], pipe_args[i]) == -1)
+            {
+                perror("nash");
+                exit(EXIT_FAILURE);
+            }
+        }
     }
-    else if (pid2 < 0)
+
+    // close parent pipe file descriptors
+    for (int i = 0; i < num_of_pipes; i++)
     {
-        perror("nash");
-        return 1;
+        close(pipes[i][0]);
+        close(pipes[i][1]);
     }
 
-    // close parent fds
-    close(fd[0]);
-    close(fd[1]);
-
-    waitpid(pid1, nullptr, 0);
-    waitpid(pid2, nullptr, 0);
+    // parent waits for children
+    for (auto pid : pids)
+    {
+        waitpid(pid, nullptr, 0);
+    }
 
     return 1;
 }
@@ -115,6 +163,7 @@ int nash_launch(char **args)
     if (pid == 0)
     {
         // child process
+        restore_terminal();
         if (execvp(args[0], args) == -1)
         {
             perror("nash");
@@ -133,6 +182,8 @@ int nash_launch(char **args)
             wpid = waitpid(pid, &status, WUNTRACED);
         } while (!WIFEXITED(status) && !WIFSIGNALED(status));
     }
+
+    set_ncanonical_mode();
 
     return 1;
 }
