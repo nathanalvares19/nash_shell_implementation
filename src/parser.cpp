@@ -75,15 +75,23 @@ char *nash_read_line(void)
                 }
                 else if (seq2 == 'B') // down
                 {
-                    hist_idx++;
                     if (hist_idx < hist_count)
+                    {
+                        hist_idx++;
+                    }
+
+                    if (hist_idx == hist_count)
+                    {
+                        buffer[length] = '\0';
+                        redraw_line(buffer, length, cursor);
+                    }
+                    else
                     {
                         const char *cmd = history.get_line(hist_idx);
                         strcpy(buffer, cmd);
                         length = strlen(cmd);
                         cursor = length;
                         redraw_line(buffer, length, cursor);
-                        continue;
                     }
                 }
                 else if (seq2 == 'C') // right

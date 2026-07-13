@@ -1,12 +1,13 @@
 #include "shell.h"
 #include "executor.h"
 #include "constants.h"
-#include "parser.h"
 #include "globals.h"
+#include "parser.h"
 
 #include <iostream>
 #include <cstdlib>
 #include <unistd.h>
+#include <cstring>
 
 // print shell prompt
 void Shell::prompt(char *name)
@@ -35,7 +36,10 @@ void Shell::run()
     {
         prompt(name);
         line = nash_read_line();
-        history.add(line);
+        if (strlen(line) != 0)
+        {
+            history.add(line);
+        }
         args = nash_split_line(line);
         status = nash_execute(args);
 
