@@ -3,11 +3,69 @@
 #include "globals.h"
 #include "terminal.h"
 
+#include <fcntl.h>
 #include <cstring>
 #include <unistd.h>
 #include <sys/wait.h>
 #include <iostream>
 #include <vector>
+
+// input redirection
+int output_redirection(char **args)
+{
+    // find operator
+    int flag = 0;
+    char *output_file;
+
+    for (int i = 0; args[i] != nullptr; i++)
+    {
+        if (strcmp(args[i], ">") == 0)
+        {
+            flag = 1;
+            args[i] = nullptr;
+            output_file = args[i + 1];
+            break;
+        }
+    }
+
+    if (!flag)
+    {
+        return 0;
+    }
+    else if (output_file != nullptr)
+    {
+        // processing
+        int fd = open(output_file, O_CREAT | O_WRONLY | O_TRUNC, 0644);
+
+        if (fd < 0)
+        {
+            perror("nash");
+            exit(EXIT_FAILURE);
+        }
+
+        pid_t pid = fork();
+        if (pid == 0)
+        {
+            if (dup2(fd, STDOUT_FILENO) == -1)
+            {
+                perror("nash");
+                exit(EXIT_FAILURE);
+            }
+
+            close(fd);
+
+            if (execvp(args[0], args) == -1)
+            {
+                perror("nash");
+                exit(EXIT_FAILURE);
+            }
+        }
+
+        close(fd);
+        waitpid(pid, nullptr, 0);
+    }
+    return 1;
+}
 
 // multiple pipes processing
 int process_pipe(char **args)
@@ -197,6 +255,11 @@ int nash_execute(char **args)
     }
 
     if (process_pipe(args))
+    {
+        return 1;
+    }
+
+    if (output_redirection(args))
     {
         return 1;
     }

@@ -8,3 +8,6 @@ int nash_launch(char **args);
 
 // shell execute binaries declaration
 int nash_execute(char **args);
+
+// output redirection declaration
+int output_redirection(char **args);
