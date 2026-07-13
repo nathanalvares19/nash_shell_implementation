@@ -16,7 +16,6 @@ int main(int argc, char **argv)
     install_signal_handlers();
 
     // run shell loop
-    Shell shell;
     shell.run();
 
     // reset terminal

@@ -8,6 +8,12 @@
 #include <cstdlib>
 #include <unistd.h>
 
+// print shell prompt
+void Shell::prompt(char *name)
+{
+    std::cout << Colours::Yellow << name << Colours::Reset << " @ " << Colours::Green << wk_dir << Colours::Reset << " > ";
+}
+
 // main shell loop
 void Shell::run()
 {
@@ -27,7 +33,7 @@ void Shell::run()
 
     do
     {
-        std::cout << Colours::Yellow << name << Colours::Reset << " @ " << Colours::Green << wk_dir << Colours::Reset << " > ";
+        prompt(name);
         line = nash_read_line();
         history.add(line);
         args = nash_split_line(line);
