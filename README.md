@@ -83,10 +83,12 @@ make rebuild
 - Command execution
 - Built-in commands (`cd`, `help`, `exit`, etc.)
 - Command history
-- Single pipe support
+- Multiple pipes support
 - Custom prompt
 - Signal handling
 - Non-canonical terminal input
+- Background jobs
+- Job control
 
 ## References
 
