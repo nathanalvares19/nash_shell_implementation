@@ -11,6 +11,63 @@
 #include <vector>
 
 // input redirection
+int input_redirection(char **args)
+{
+    // find operator
+    int flag = 0;
+    char *input_file;
+
+    for (int i = 0; args[i] != nullptr; i++)
+    {
+        if (strcmp(args[i], "<") == 0)
+        {
+            flag = 1;
+            args[i] = nullptr;
+            input_file = args[i + 1];
+            break;
+        }
+    }
+
+    if (!flag)
+    {
+        return 0;
+    }
+    else if (input_file != nullptr)
+    {
+        // processing
+        int fd = open(input_file, O_RDONLY);
+
+        if (fd < 0)
+        {
+            perror("nash");
+            exit(EXIT_FAILURE);
+        }
+
+        pid_t pid = fork();
+        if (pid == 0)
+        {
+            if (dup2(fd, STDIN_FILENO) == -1)
+            {
+                perror("nash");
+                exit(EXIT_FAILURE);
+            }
+
+            close(fd);
+
+            if (execvp(args[0], args) == -1)
+            {
+                perror("nash");
+                exit(EXIT_FAILURE);
+            }
+        }
+
+        close(fd);
+        waitpid(pid, nullptr, 0);
+    }
+    return 1;
+}
+
+// output redirection
 int output_redirection(char **args)
 {
     // find operator

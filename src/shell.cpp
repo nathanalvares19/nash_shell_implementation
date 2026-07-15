@@ -36,7 +36,7 @@ void Shell::run()
     {
         prompt(name);
         line = nash_read_line();
-        if (strlen(line) != 0)
+        if (strlen(line) != 0) // only add to history if not empty
         {
             history.add(line);
         }

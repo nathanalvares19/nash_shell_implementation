@@ -11,3 +11,6 @@ int nash_execute(char **args);
 
 // output redirection declaration
 int output_redirection(char **args);
+
+// input redirection declaration
+int input_redirection(char **args);
