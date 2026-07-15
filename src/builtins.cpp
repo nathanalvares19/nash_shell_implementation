@@ -20,7 +20,8 @@ const char *nash_builtins_str[] = {
     "exit",
     "loc",
     "slate",
-    "past"};
+    "past",
+    "jobs"};
 
 // built-in function descriptions
 const char *nash_builtins_desc[] = {
@@ -29,7 +30,8 @@ const char *nash_builtins_desc[] = {
     "exit: Exits the shell",
     "loc: Prints the current directory",
     "slate: Clears the terminal screen",
-    "past: Prints the command history for the current shell session"};
+    "past: Prints the command history for the current shell session",
+    "jobs: Prints all the running background jobs"};
 
 // array of built-in functions
 int (*nash_builtins_func[])(char **) = {
@@ -38,7 +40,8 @@ int (*nash_builtins_func[])(char **) = {
     nash_exit,
     nash_pwd,
     nash_clear,
-    nash_history};
+    nash_history,
+    nash_jobs};
 
 // built-in function count
 int nash_builtins_nums()
@@ -130,5 +133,12 @@ int nash_clear(char **args)
 int nash_history(char **args)
 {
     history.print();
+    return 1;
+}
+
+// print jobs function
+int nash_jobs(char **args)
+{
+    shell.print_jobs();
     return 1;
 }

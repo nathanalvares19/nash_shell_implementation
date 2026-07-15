@@ -7,6 +7,7 @@ int nash_exit(char **args);
 int nash_pwd(char **args);
 int nash_clear(char **args);
 int nash_history(char **args);
+int nash_jobs(char **args);
 
 // built-in function count declaration
 int nash_builtins_nums();

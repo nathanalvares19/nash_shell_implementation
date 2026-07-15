@@ -101,7 +101,11 @@ int execute_commands(std::vector<Command> &commands)
     }
     else
     {
+        std::cout << "[" << shell.next_job_id << "]\n";
         std::cout << "pid: " << pids[0] << "\n";
+
+        // add to jobs table
+        shell.add_job(pids[0], commands[0].args[0]);
     }
 
     return 1;
@@ -200,7 +204,11 @@ int nash_launch(std::vector<Command> &commands)
         }
         else
         {
+            std::cout << "[" << shell.next_job_id << "]\n";
             std::cout << "pid: " << pid << "\n";
+
+            // add to jobs table
+            shell.add_job(pid, commands[0].args[0]);
         }
     }
 

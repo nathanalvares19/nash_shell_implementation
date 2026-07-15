@@ -4,11 +4,13 @@
 #include "globals.h"
 #include "parser.h"
 
+#include <iomanip>
 #include <iostream>
 #include <cstdlib>
 #include <unistd.h>
 #include <cstring>
 #include <sys/wait.h>
+#include <algorithm>
 
 // print shell prompt
 void Shell::prompt(char *name)
@@ -36,10 +38,8 @@ void Shell::run()
 
     do
     {
-        while (waitpid(-1, nullptr, WNOHANG) > 0)
-        {
-            // clean up child processes
-        }
+        // remove child processes from jobs table
+        reap_jobs();
 
         prompt(name);
         line = nash_read_line();
@@ -98,4 +98,52 @@ char *Shell::process_name()
     }
 
     return name;
+}
+
+// add job function
+void Shell::add_job(pid_t pid, const std::string &command)
+{
+    jobs.push_back({next_job_id++,
+                    pid,
+                    command});
+}
+
+// print jobs
+void Shell::print_jobs()
+{
+
+    if (!jobs.empty())
+    {
+        std::cout << std::left << std::setw(6) << "JOB" << std::setw(10) << "PID" << "COMMAND\n";
+
+        std::cout << "------------------------\n";
+    }
+    else
+    {
+        std::cout << "No active jobs\n";
+    }
+
+    for (const auto &job : jobs)
+    {
+
+        std::cout << std::left << std::setw(6) << ("[" + std::to_string(job.id) + "]") << std::setw(10) << job.pid << job.command << '\n';
+    }
+}
+
+// reap jobs - basically just delete from the vector
+void Shell::reap_jobs()
+{
+    pid_t pid;
+
+    while ((pid = waitpid(-1, nullptr, WNOHANG)) > 0)
+    {
+        auto it = std::find_if(jobs.begin(), jobs.end(), [pid](const Job &job)
+                               { return job.pid == pid; });
+
+        if (it != jobs.end())
+        {
+            std::cout << "\nJob finished: " << it->id << " " << it->pid << "\n";
+            jobs.erase(it);
+        }
+    }
 }
