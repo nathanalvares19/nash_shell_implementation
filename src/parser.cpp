@@ -6,6 +6,84 @@
 #include <iostream>
 #include <cstdlib>
 #include <cstring>
+#include <vector>
+#include <string>
+
+// parse command function
+std::vector<Command> parse_commands(char **args)
+{
+    std::vector<Command> commands;
+
+    // separate args into commands (split around pipes)
+    int idx = 0;
+    while (args[idx] != nullptr)
+    {
+        Command cmd;
+        for (int i = idx; args[idx] != nullptr && strcmp(args[i], "|") != 0; i++, idx++)
+        {
+            cmd.args.push_back(args[i]);
+        }
+        if (args[idx] != nullptr)
+        {
+            idx++;
+        }
+        cmd.args.push_back(nullptr);
+        commands.push_back(cmd);
+    }
+
+    // actually parse the individual commands
+    for (Command &cmd : commands)
+    {
+
+        for (int i = 0; cmd.args[i] != nullptr; i++)
+        {
+            if (strcmp(cmd.args[i], ">") == 0 || strcmp(cmd.args[i], ">>") == 0) // output and append
+            {
+                cmd.has_output = true;
+                if (strcmp(cmd.args[i], ">>") == 0)
+                {
+                    cmd.append = true;
+                }
+
+                cmd.args[i] = nullptr;
+
+                // add file path
+                if (i + 1 >= cmd.args.size() ||
+                    cmd.args[i + 1] == nullptr)
+                {
+                    return commands;
+                }
+                else
+                {
+                    cmd.output_file = cmd.args[i + 1];
+                    cmd.args[i + 1] = nullptr;
+                    i++;
+                }
+            }
+            else if (strcmp(cmd.args[i], "<") == 0) // input
+            {
+                cmd.has_input = true;
+
+                cmd.args[i] = nullptr;
+
+                // add file path
+                if (i + 1 >= cmd.args.size() ||
+                    cmd.args[i + 1] == nullptr)
+                {
+                    return commands;
+                }
+                else
+                {
+                    cmd.input_file = cmd.args[i + 1];
+                    cmd.args[i + 1] = nullptr;
+                    i++;
+                }
+            }
+        }
+    }
+
+    return commands;
+}
 
 // redraw function
 void redraw_line(const char *buffer, int length, int cursor)

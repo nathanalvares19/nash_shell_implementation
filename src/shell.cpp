@@ -21,6 +21,7 @@ void Shell::run()
     char *line;
     char **args;
     int status;
+    std::vector<Command> commands;
 
     // username implementation
     std::cout << "Enter username (maximum 32 chars): ";
@@ -41,7 +42,8 @@ void Shell::run()
             history.add(line);
         }
         args = nash_split_line(line);
-        status = nash_execute(args);
+        commands = parse_commands(args);
+        status = nash_execute(commands);
 
         free(line);
         free(args);
