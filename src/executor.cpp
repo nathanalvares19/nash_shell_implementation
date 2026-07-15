@@ -92,9 +92,16 @@ int execute_commands(std::vector<Command> &commands)
     }
 
     // wait for children
-    for (pid_t pid : pids)
+    if (!commands[0].background)
     {
-        waitpid(pid, nullptr, 0);
+        for (pid_t pid : pids)
+        {
+            waitpid(pid, nullptr, 0);
+        }
+    }
+    else
+    {
+        std::cout << "pid: " << pids[0] << "\n";
     }
 
     return 1;
@@ -184,10 +191,17 @@ int nash_launch(std::vector<Command> &commands)
     else
     {
         // parent process
-        do
+        if (!commands[0].background)
         {
-            waitpid(pid, &status, WUNTRACED);
-        } while (!WIFEXITED(status) && !WIFSIGNALED(status));
+            do
+            {
+                waitpid(pid, &status, WUNTRACED);
+            } while (!WIFEXITED(status) && !WIFSIGNALED(status));
+        }
+        else
+        {
+            std::cout << "pid: " << pid << "\n";
+        }
     }
 
     set_ncanonical_mode();

@@ -8,6 +8,7 @@
 #include <cstdlib>
 #include <unistd.h>
 #include <cstring>
+#include <sys/wait.h>
 
 // print shell prompt
 void Shell::prompt(char *name)
@@ -35,6 +36,11 @@ void Shell::run()
 
     do
     {
+        while (waitpid(-1, nullptr, WNOHANG) > 0)
+        {
+            // clean up child processes
+        }
+
         prompt(name);
         line = nash_read_line();
         if (strlen(line) != 0) // only add to history if not empty

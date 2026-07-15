@@ -6,14 +6,18 @@
 // command struct
 struct Command
 {
+    // command args list
     std::vector<char *> args;
 
-    char *input_file;
-    char *output_file;
+    // file paths
+    char *input_file = nullptr;
+    char *output_file = nullptr;
 
+    // useful flags
     bool has_input = false;
     bool has_output = false;
     bool append = false;
+    bool background = false;
 };
 
 // command parsing declartion

@@ -34,7 +34,6 @@ std::vector<Command> parse_commands(char **args)
     // actually parse the individual commands
     for (Command &cmd : commands)
     {
-
         for (int i = 0; cmd.args[i] != nullptr; i++)
         {
             if (strcmp(cmd.args[i], ">") == 0 || strcmp(cmd.args[i], ">>") == 0) // output and append
@@ -78,6 +77,11 @@ std::vector<Command> parse_commands(char **args)
                     cmd.args[i + 1] = nullptr;
                     i++;
                 }
+            }
+            else if (strcmp(cmd.args[i], "&") == 0)
+            {
+                cmd.background = true;
+                cmd.args[i] = nullptr;
             }
         }
     }
