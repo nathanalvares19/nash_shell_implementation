@@ -4,6 +4,7 @@
 #include "globals.h"
 #include "parser.h"
 
+#include <signal.h>
 #include <iomanip>
 #include <iostream>
 #include <cstdlib>
@@ -41,6 +42,7 @@ void Shell::run()
         // remove child processes from jobs table
         reap_jobs();
 
+        // prompt
         prompt(name);
         line = nash_read_line();
         if (strlen(line) != 0) // only add to history if not empty
@@ -146,4 +148,29 @@ void Shell::reap_jobs()
             jobs.erase(it);
         }
     }
+}
+
+// signal handling
+void Shell::init_signals()
+{
+    struct sigaction sa;
+
+    // register SIGINT handler
+    sa.sa_handler = Shell::handle_sigint;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = 0;
+    sigaction(SIGINT, &sa, nullptr);
+
+    // register SIGTSTP handler
+    sa.sa_handler = SIG_IGN;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = 0;
+    sigaction(SIGTSTP, &sa, nullptr);
+}
+
+// SIGINT handler
+void Shell::handle_sigint(int sig)
+{
+    write(STDOUT_FILENO, "SIGINT triggered", 17);
+    return;
 }

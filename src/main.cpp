@@ -13,7 +13,7 @@ int main(int argc, char **argv)
     initialize_terminal();
 
     // setup signal handlers
-    install_signal_handlers();
+    shell.init_signals();
 
     // run shell loop
     shell.run();

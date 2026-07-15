@@ -3,7 +3,6 @@
 
 #include <unistd.h>
 #include <termios.h>
-#include <signal.h>
 
 struct termios original_termios;
 struct termios raw;
@@ -30,22 +29,4 @@ void set_ncanonical_mode()
 void restore_terminal()
 {
     tcsetattr(STDIN_FILENO, TCSAFLUSH, &original_termios);
-}
-
-// SIGINT handler
-void sigint_handler(int sig)
-{
-    write(STDOUT_FILENO, "^C", 2);
-    return;
-}
-
-// setup signal handlers
-void install_signal_handlers()
-{
-    struct sigaction sa{};
-
-    sa.sa_handler = sigint_handler;
-    sigemptyset(&sa.sa_mask);
-    sa.sa_flags = 0;
-    sigaction(SIGINT, &sa, nullptr);
 }

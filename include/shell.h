@@ -12,6 +12,8 @@ public:
     void add_job(pid_t pid, const std::string &command);
     void print_jobs();
     void reap_jobs();
+    void init_signals();
+    static void handle_sigint(int sig);
 
     int next_job_id = 1;
 
