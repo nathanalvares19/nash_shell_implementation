@@ -71,28 +71,45 @@ int input_redirection(char **args)
 int output_redirection(char **args)
 {
     // find operator
-    int flag = 0;
+    int wr_flag = 0;
+    int ap_flag = 0;
     char *output_file;
 
     for (int i = 0; args[i] != nullptr; i++)
     {
         if (strcmp(args[i], ">") == 0)
         {
-            flag = 1;
+            wr_flag = 1;
+            args[i] = nullptr;
+            output_file = args[i + 1];
+            break;
+        }
+        if (strcmp(args[i], ">>") == 0)
+        {
+            ap_flag = 1;
             args[i] = nullptr;
             output_file = args[i + 1];
             break;
         }
     }
 
-    if (!flag)
+    if (!wr_flag && !ap_flag)
     {
         return 0;
     }
     else if (output_file != nullptr)
     {
         // processing
-        int fd = open(output_file, O_CREAT | O_WRONLY | O_TRUNC, 0644);
+        int fd;
+
+        if (wr_flag)
+        {
+            fd = open(output_file, O_CREAT | O_WRONLY | O_TRUNC, 0644);
+        }
+        else
+        {
+            fd = open(output_file, O_CREAT | O_WRONLY | O_APPEND, 0644);
+        }
 
         if (fd < 0)
         {
