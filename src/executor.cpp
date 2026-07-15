@@ -40,7 +40,7 @@ int input_redirection(char **args)
         if (fd < 0)
         {
             perror("nash");
-            exit(EXIT_FAILURE);
+            return 1;
         }
 
         pid_t pid = fork();
@@ -97,7 +97,7 @@ int output_redirection(char **args)
         if (fd < 0)
         {
             perror("nash");
-            exit(EXIT_FAILURE);
+            return 1;
         }
 
         pid_t pid = fork();
@@ -317,6 +317,11 @@ int nash_execute(char **args)
     }
 
     if (output_redirection(args))
+    {
+        return 1;
+    }
+
+    if (input_redirection(args))
     {
         return 1;
     }
